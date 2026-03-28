@@ -1,2 +1,3 @@
 tmp/
 .openclaw/
+__pycache__/

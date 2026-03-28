@@ -1,0 +1,17 @@
+{
+  "name": "支票流程 PWA 模板",
+  "short_name": "支票PWA",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f3ee",
+  "theme_color": "#8f1d1d",
+  "description": "門市提交、管理覆核、會計對帳的支票流程 PWA 介面模板。",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
