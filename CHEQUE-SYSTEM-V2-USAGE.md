@@ -104,3 +104,8 @@ node .\cheque-system\scripts\cheque-ledger.mjs list
 ```powershell
 node .\cheque-system\scripts\cheque-ledger.mjs list --status sheet_failed
 ```
+
+## 狀態總覽
+```powershell
+node .\cheque-system\scripts\cheque-status-report.mjs
+```
