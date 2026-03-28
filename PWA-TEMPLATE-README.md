@@ -4,15 +4,16 @@
 - `cheque-pwa-template/index.html`
 
 ## 模板內容
-這是一個可試看的靜態 PWA 模板，包含三個角色畫面：
+這是一個可試看的 PWA 原型，包含三個角色畫面：
 - 店舖版
 - 管理員版
 - 會計版
 
 ## 目前用途
-- 先讓你感受畫面與流程方向
-- 不是正式 backend 成品
-- 暫時使用假資料展示互動
+- 讓你感受畫面與流程方向
+- 目前已可讀取本地 `cheque-system/data/records.json` 真記錄做畫面展示
+- 仍未正式接上提交寫入、登入權限、真正會計操作
+- 屬於「真資料 preview」，未屬完整成品
 
 ## 如何試看
 ### 方法 A：直接打開
@@ -23,7 +24,7 @@
 在 workspace 執行：
 ```powershell
 cd C:\Users\victor\.openclaw\workspace\cheque-pwa-template
-python -m http.server 4173
+node .\preview-server.mjs
 ```
 然後開：
 - `http://127.0.0.1:4173`

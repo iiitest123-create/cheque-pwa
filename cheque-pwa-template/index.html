@@ -12,10 +12,14 @@
   <div class="app-shell">
     <header class="topbar">
       <div>
-        <div class="eyebrow">榮華大總管 · 支票系統 PWA 模板</div>
-        <h1>門市提交 / 管理覆核 / 會計對帳</h1>
+        <div class="eyebrow">榮華大總管 · 支票系統 PWA</div>
+        <h1>第一期真資料版預覽</h1>
+        <div class="live-note">而家會直接讀本地 ledger 記錄做畫面展示</div>
       </div>
-      <button id="installBtn" class="ghost-btn hidden">安裝到手機</button>
+      <div class="topbar-actions">
+        <button id="refreshBtn" class="secondary-btn">重新整理資料</button>
+        <button id="installBtn" class="ghost-btn hidden">安裝到手機</button>
+      </div>
     </header>
 
     <nav class="role-tabs">
@@ -30,7 +34,7 @@
           <div class="phone-header">店舖版</div>
           <div class="phone-body">
             <div class="card primary">
-              <div class="card-title">新增支票記錄</div>
+              <div class="card-title">新增支票記錄（第一期目標）</div>
               <div class="field-grid">
                 <label>
                   <span>門市編號</span>
@@ -38,7 +42,7 @@
                     <option>TSW01</option>
                     <option>TSW02</option>
                     <option>PU003</option>
-                    <option>MK001</option>
+                    <option>YL001</option>
                   </select>
                 </label>
                 <label>
@@ -54,12 +58,12 @@
                 <span>上傳圖片</span>
                 <div class="upload-box">
                   <div>📷 拍照 / 相簿</div>
-                  <small>支票 + 發票可一齊影</small>
+                  <small>之後會直接接返 OCR + ledger</small>
                 </div>
               </label>
               <div class="button-row">
-                <button class="secondary-btn" data-demo="ocr">模擬 OCR</button>
-                <button class="primary-btn">提交</button>
+                <button class="secondary-btn" data-demo="ocr">模擬 OCR 預覽</button>
+                <button class="primary-btn">提交（下一步接 backend）</button>
               </div>
             </div>
 
@@ -82,23 +86,13 @@
             </div>
 
             <div class="card">
-              <div class="card-title">最近提交</div>
-              <div class="mini-list">
-                <div class="mini-item">
-                  <div>
-                    <div class="mini-title">TSW01｜跨境支票</div>
-                    <div class="mini-sub">067173 · HK$2,163.89</div>
-                  </div>
-                  <span class="badge green">已儲存</span>
-                </div>
-                <div class="mini-item">
-                  <div>
-                    <div class="mini-title">TSW02｜鋪頭支票</div>
-                    <div class="mini-sub">067174 · HK$1,860.00</div>
-                  </div>
-                  <span class="badge amber">待確認</span>
+              <div class="section-head compact">
+                <div>
+                  <div class="card-title">最近真實記錄</div>
+                  <small id="storeMeta">載入中…</small>
                 </div>
               </div>
+              <div class="mini-list" id="storeRecentList"></div>
             </div>
           </div>
         </div>
@@ -108,28 +102,28 @@
         <div class="dashboard-grid">
           <div class="stat-card danger">
             <div class="stat-label">待確認</div>
-            <div class="stat-value">3</div>
-            <div class="stat-note">有 3 張單等你批核</div>
+            <div class="stat-value" id="adminPendingCount">-</div>
+            <div class="stat-note">尚未批核的支票記錄</div>
           </div>
           <div class="stat-card warning">
             <div class="stat-label">待處理圖片</div>
-            <div class="stat-value">5</div>
-            <div class="stat-note">尚未回填雲端連結</div>
+            <div class="stat-value" id="adminImagePendingCount">-</div>
+            <div class="stat-note">待壓縮／待上傳／待補圖</div>
           </div>
           <div class="stat-card ok">
             <div class="stat-label">今日已入帳</div>
-            <div class="stat-value">18</div>
-            <div class="stat-note">Google Sheet 已同步</div>
+            <div class="stat-value" id="adminWrittenCount">-</div>
+            <div class="stat-note">已寫入 Google Sheet</div>
           </div>
         </div>
 
         <div class="card wide-card">
           <div class="section-head">
             <div>
-              <div class="card-title">待確認記錄</div>
-              <small>管理員可查看原圖、修正欄位、再確認寫入</small>
+              <div class="card-title">待確認 / 最近記錄</div>
+              <small>而家已接真 ledger；可點任何一筆睇詳情</small>
             </div>
-            <button class="secondary-btn">匯出</button>
+            <div class="meta-chip" id="adminMeta">載入中…</div>
           </div>
           <div class="table-wrap">
             <table>
@@ -144,26 +138,7 @@
                   <th>操作</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>TSW01</td>
-                  <td>跨境支票</td>
-                  <td>067173</td>
-                  <td>HK$2,163.89</td>
-                  <td>Sims Trading...</td>
-                  <td><span class="badge amber">待確認</span></td>
-                  <td><button class="link-btn">查看</button></td>
-                </tr>
-                <tr>
-                  <td>TSW02</td>
-                  <td>鋪頭支票</td>
-                  <td>067174</td>
-                  <td>HK$1,860.00</td>
-                  <td>森滙發展有限公司</td>
-                  <td><span class="badge green">已寫入</span></td>
-                  <td><button class="link-btn">查看</button></td>
-                </tr>
-              </tbody>
+              <tbody id="adminTableBody"></tbody>
             </table>
           </div>
         </div>
@@ -173,62 +148,53 @@
         <div class="dashboard-grid accounting-top">
           <div class="stat-card warning">
             <div class="stat-label">2 日內待過數</div>
-            <div class="stat-value">6</div>
-            <div class="stat-note">建議提早留意銀行紀錄</div>
+            <div class="stat-value" id="acctUpcomingCount">-</div>
+            <div class="stat-note">建議提早檢查銀行記錄</div>
           </div>
           <div class="stat-card danger">
             <div class="stat-label">已到期未過數</div>
-            <div class="stat-value">2</div>
-            <div class="stat-note">需要跟進供應商 / 門市</div>
+            <div class="stat-value" id="acctOverdueCount">-</div>
+            <div class="stat-note">會計需跟進</div>
           </div>
           <div class="stat-card ok">
-            <div class="stat-label">今日已對帳</div>
-            <div class="stat-value">11</div>
-            <div class="stat-note">銀行流水已 match</div>
+            <div class="stat-label">總記錄數</div>
+            <div class="stat-value" id="acctTotalCount">-</div>
+            <div class="stat-note">之後會接銀行資料輸入層</div>
           </div>
         </div>
 
         <div class="card wide-card">
           <div class="section-head">
             <div>
-              <div class="card-title">會計對帳清單</div>
-              <small>之後可接銀行 CSV / Excel，自動 match 支票號碼與金額</small>
+              <div class="card-title">會計跟進清單</div>
+              <small>第 1 階段先用 ledger 推算待過數 / 逾期項目</small>
             </div>
             <div class="button-row tight">
-              <button class="secondary-btn">匯入銀行流水</button>
-              <button class="primary-btn">批次對帳</button>
+              <button class="secondary-btn">匯入銀行 PDF / 圖片（下一期）</button>
+              <button class="primary-btn">批次對帳（下一期）</button>
             </div>
           </div>
-          <div class="mini-list accounting-list">
-            <div class="mini-item border-danger">
-              <div>
-                <div class="mini-title">TSW03｜067166｜HK$4,280.00</div>
-                <div class="mini-sub">支票日：2026-03-25 · 已過 3 日仍未過數</div>
-              </div>
-              <span class="badge red">跟進中</span>
-            </div>
-            <div class="mini-item border-warning">
-              <div>
-                <div class="mini-title">TSW01｜067173｜HK$2,163.89</div>
-                <div class="mini-sub">支票日：2026-03-31 · 2 日後應檢查</div>
-              </div>
-              <span class="badge amber">待提醒</span>
-            </div>
-            <div class="mini-item border-ok">
-              <div>
-                <div class="mini-title">TSW02｜067174｜HK$1,860.00</div>
-                <div class="mini-sub">已 match 銀行流水 · 2026-03-28</div>
-              </div>
-              <span class="badge green">已過數</span>
-            </div>
-          </div>
+          <div class="mini-list accounting-list" id="accountingList"></div>
         </div>
       </section>
     </main>
 
+    <aside class="detail-drawer hidden" id="detailDrawer">
+      <div class="drawer-card">
+        <div class="section-head">
+          <div>
+            <div class="card-title">記錄詳情</div>
+            <small id="drawerSub">-</small>
+          </div>
+          <button id="closeDrawerBtn" class="ghost-btn">關閉</button>
+        </div>
+        <div id="drawerBody" class="drawer-body"></div>
+      </div>
+    </aside>
+
     <footer class="footer-note">
-      <span>這是可試看的 PWA 模板，不是最終成品。</span>
-      <span>下一步可把你現有 ledger / Google Sheet / 圖片流程接進去。</span>
+      <span>這已不是純假畫面：而家會直接讀 ledger 真記錄。</span>
+      <span>下一步會接真正提交、確認、寫表與會計狀態更新。</span>
     </footer>
   </div>
 
