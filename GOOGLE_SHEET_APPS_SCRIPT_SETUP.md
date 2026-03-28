@@ -105,6 +105,8 @@ OpenClaw / 後續流程只要 POST JSON 到該 URL。
 }
 ```
 
+> 本地 `google-apps-script-cheque-log.gs` 最新草稿已補上 `appendMain` 回傳 `rowNumber`。若你想令 ledger 連第幾行都記得更完整，之後把最新版本重新貼上並再部署一次即可；即使暫未更新，V2 流程仍可照常運作。
+
 ## 注意
 - `SECRET_TOKEN` 不要貼進群組
 - 如果日後換表，只要改 `SHEET_NAME`

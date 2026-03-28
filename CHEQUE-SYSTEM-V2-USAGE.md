@@ -57,6 +57,39 @@ node .\cheque-system\scripts\cheque-ledger.mjs attach-image `
   --image-status 已上傳
 ```
 
+## 一條命令處理一筆已確認記錄
+### 本地模式（先寫 Sheet，再壓圖到本機）
+```powershell
+$env:APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznlUl54sCTqCipLT_wWeotNlZ1RnwU7OGKwmcUkSiAwjIKXTUnzHwqMTnORhMhT50c4g/exec'
+$env:APPS_SCRIPT_TOKEN = 'wingwah-2026-cheque-bot-secret'
+node .\cheque-system\scripts\cheque-process-record.mjs --record-key 3EB05AB1C8A99887B746E6 --image-mode local --actor "Chun (+85267012827)"
+```
+
+### Drive 模式（寫 Sheet、壓圖、upload、回填圖片）
+```powershell
+$env:APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznlUl54sCTqCipLT_wWeotNlZ1RnwU7OGKwmcUkSiAwjIKXTUnzHwqMTnORhMhT50c4g/exec'
+$env:APPS_SCRIPT_TOKEN = 'wingwah-2026-cheque-bot-secret'
+$env:GOOGLE_SERVICE_ACCOUNT_JSON = 'C:\secure\gdrive-service-account.json'
+$env:GOOGLE_DRIVE_FOLDER_ID = 'YOUR_FOLDER_ID'
+node .\cheque-system\scripts\cheque-process-record.mjs --record-key 3EB05AB1C8A99887B746E6 --image-mode drive --actor "system"
+```
+
+## 只做寫 Sheet
+```powershell
+node .\cheque-system\scripts\cheque-sheet-sync.mjs --record-key 3EB05AB1C8A99887B746E6
+```
+
+## 只做圖片處理
+### 本地模式
+```powershell
+node .\cheque-system\scripts\cheque-image-sync.mjs --record-key 3EB05AB1C8A99887B746E6 --mode local
+```
+
+### Drive 模式
+```powershell
+node .\cheque-system\scripts\cheque-image-sync.mjs --record-key 3EB05AB1C8A99887B746E6 --mode drive
+```
+
 ## 查看單筆記錄
 ```powershell
 node .\cheque-system\scripts\cheque-ledger.mjs show --record-key 3EB05AB1C8A99887B746E6

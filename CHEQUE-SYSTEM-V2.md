@@ -93,7 +93,12 @@ V2 先採用 **workspace 內 JSON store + JSONL event log**，避免引入額外
 日後如有需要，可平滑升級至 SQLite。
 
 ## CLI 工具（現階段）
-使用 `cheque-system/scripts/cheque-ledger.mjs` 管理記錄。
+現階段已提供以下工具：
+
+- `cheque-system/scripts/cheque-ledger.mjs`：建立 / 更新 / 查詢記錄
+- `cheque-system/scripts/cheque-sheet-sync.mjs`：把 ledger 記錄寫入 Apps Script / Google Sheet，並回寫狀態
+- `cheque-system/scripts/cheque-image-sync.mjs`：根據 ledger 記錄壓縮圖片，並以 local / drive 模式更新圖片狀態
+- `cheque-system/scripts/cheque-process-record.mjs`：高層 orchestrator，一條命令順序執行寫 Sheet + 圖片處理
 
 支援：
 - 建立 / 更新記錄
@@ -104,6 +109,7 @@ V2 先採用 **workspace 內 JSON store + JSONL event log**，避免引入額外
 - 匯出 Apps Script `appendMain` payload
 - 查詢單筆記錄
 - 列出記錄
+- 一條命令執行單筆處理
 
 ## 推薦操作流程
 1. 收到 WhatsApp 圖片與文字

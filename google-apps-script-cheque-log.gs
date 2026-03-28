@@ -84,7 +84,8 @@ function appendMainRecord(sheet, data) {
   ];
 
   sheet.appendRow(row);
-  return jsonOutput({ ok: true, action: 'appendMain', row });
+  const rowNumber = sheet.getLastRow();
+  return jsonOutput({ ok: true, action: 'appendMain', rowNumber, row });
 }
 
 function updateImageFields(sheet, data) {
