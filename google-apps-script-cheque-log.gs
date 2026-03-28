@@ -1,6 +1,34 @@
 const SHEET_NAME = 'Sheet1';
 const SECRET_TOKEN = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';
 
+const HEADERS = [
+  '門市編號',
+  '支票類別',
+  '輸入日期',
+  '支票付款日期',
+  '支票號碼',
+  '支票金額',
+  '收款公司名',
+  'Invoice No.',
+  '備註',
+  '圖片連結',
+  '圖片預覽',
+  '圖片狀態',
+  '記錄鍵值'
+];
+
+const REQUIRED_MAIN_FIELDS = [
+  'storeCode',
+  'chequeType',
+  'inputDate',
+  'chequePaymentDate',
+  'chequeNumber',
+  'chequeAmount',
+  'payeeName',
+  'invoiceNo',
+  'recordKey'
+];
+
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) {
@@ -13,45 +41,90 @@ function doPost(e) {
       return jsonOutput({ ok: false, error: 'Unauthorized' });
     }
 
-    const required = [
-      'storeCode',
-      'chequeType',
-      'inputDate',
-      'chequePaymentDate',
-      'chequeNumber',
-      'chequeAmount',
-      'payeeName',
-      'invoiceNo'
-    ];
-
-    const missing = required.filter(k => !String(data[k] ?? '').trim());
-    if (missing.length > 0) {
-      return jsonOutput({ ok: false, error: 'Missing required fields', fields: missing });
-    }
-
+    const action = String(data.action || 'appendMain');
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
       return jsonOutput({ ok: false, error: `Sheet not found: ${SHEET_NAME}` });
     }
 
-    const row = [
-      data.storeCode,
-      data.chequeType,
-      data.inputDate,
-      data.chequePaymentDate,
-      data.chequeNumber,
-      data.chequeAmount,
-      data.payeeName,
-      data.invoiceNo,
-      data.remarks || '-'
-    ];
+    if (action === 'appendMain') {
+      return appendMainRecord(sheet, data);
+    }
 
-    sheet.appendRow(row);
+    if (action === 'updateImage') {
+      return updateImageFields(sheet, data);
+    }
 
-    return jsonOutput({ ok: true, row });
+    return jsonOutput({ ok: false, error: `Unsupported action: ${action}` });
   } catch (err) {
     return jsonOutput({ ok: false, error: String(err) });
   }
+}
+
+function appendMainRecord(sheet, data) {
+  const missing = REQUIRED_MAIN_FIELDS.filter(k => !String(data[k] ?? '').trim());
+  if (missing.length > 0) {
+    return jsonOutput({ ok: false, error: 'Missing required fields', fields: missing });
+  }
+
+  const row = [
+    data.storeCode,
+    data.chequeType,
+    data.inputDate,
+    data.chequePaymentDate,
+    data.chequeNumber,
+    data.chequeAmount,
+    data.payeeName,
+    data.invoiceNo,
+    data.remarks || '-',
+    data.imageLink || '',
+    data.imagePreview || '',
+    data.imageStatus || '待上傳',
+    data.recordKey
+  ];
+
+  sheet.appendRow(row);
+  return jsonOutput({ ok: true, action: 'appendMain', row });
+}
+
+function updateImageFields(sheet, data) {
+  const recordKey = String(data.recordKey || '').trim();
+  if (!recordKey) {
+    return jsonOutput({ ok: false, error: 'Missing required fields', fields: ['recordKey'] });
+  }
+
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastRow < 2) {
+    return jsonOutput({ ok: false, error: 'No data rows found' });
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+  const recordKeyColumnIndex = HEADERS.indexOf('記錄鍵值');
+  const imageLinkColumnIndex = HEADERS.indexOf('圖片連結');
+  const imagePreviewColumnIndex = HEADERS.indexOf('圖片預覽');
+  const imageStatusColumnIndex = HEADERS.indexOf('圖片狀態');
+
+  const rowOffset = values.findIndex(row => String(row[recordKeyColumnIndex] || '').trim() === recordKey);
+  if (rowOffset === -1) {
+    return jsonOutput({ ok: false, error: `Record not found for recordKey: ${recordKey}` });
+  }
+
+  const sheetRow = rowOffset + 2;
+
+  if ('imageLink' in data) {
+    sheet.getRange(sheetRow, imageLinkColumnIndex + 1).setValue(data.imageLink || '');
+  }
+
+  if ('imagePreview' in data) {
+    sheet.getRange(sheetRow, imagePreviewColumnIndex + 1).setValue(data.imagePreview || '');
+  }
+
+  if ('imageStatus' in data) {
+    sheet.getRange(sheetRow, imageStatusColumnIndex + 1).setValue(data.imageStatus || '');
+  }
+
+  return jsonOutput({ ok: true, action: 'updateImage', rowNumber: sheetRow, recordKey });
 }
 
 function normalizePayload(obj) {
@@ -67,12 +140,10 @@ function normalizeUtf8Text(value) {
   if (value == null) return value;
   const text = String(value);
 
-  // If the text already contains normal Chinese characters, keep it.
   if (/[\u4e00-\u9fff]/.test(text)) {
     return text;
   }
 
-  // Try to repair UTF-8 text that was mis-decoded as Latin-1/Windows-1252.
   try {
     const repaired = decodeURIComponent(escape(text));
     if (/[\u4e00-\u9fff]/.test(repaired)) {
@@ -94,18 +165,6 @@ function setupHeader() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   if (!sheet) throw new Error(`Sheet not found: ${SHEET_NAME}`);
 
-  const headers = [
-    '門市編號',
-    '支票類別',
-    '輸入日期',
-    '支票付款日期',
-    '支票號碼',
-    '支票金額',
-    '收款公司名',
-    'Invoice No.',
-    '備註'
-  ];
-
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
   sheet.setFrozenRows(1);
 }
