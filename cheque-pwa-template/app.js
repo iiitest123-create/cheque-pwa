@@ -167,21 +167,75 @@ function hideDrawer() {
   drawer.classList.add('hidden');
 }
 
+// ── Google Sheet 設定 ──────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznlUl54sCTqCipLT_wWeotNlZ1RnwU7OGKwmcUkSiAwjIKXTUnzHwqMTnORhMhT50c4g/exec';
+const APPS_SCRIPT_TOKEN = 'wingwah-2026-cheque-bot-secret';
+
+function sheetRowToRecord(row) {
+  // 將 Sheet 行（物件，key=欄位名）轉成 PWA 用的 record 格式
+  const chequeNumber = String(row['支票號碼'] || '');
+  const storeCode = String(row['門市編號'] || '');
+  const recordKey = String(row['記錄鍵值'] || chequeNumber || Math.random().toString(36).slice(2));
+  const chequeAmount = Number(row['支票金額']) || 0;
+  const imageLink = String(row['圖片連結'] || '');
+  const imageStatus = String(row['圖片狀態'] || '待上傳');
+  return {
+    recordKey,
+    storeCode,
+    chequeType: String(row['支票類別'] || ''),
+    inputDate: String(row['輸入日期'] || ''),
+    chequePaymentDate: String(row['支票付款日期'] || ''),
+    chequeNumber,
+    chequeAmount,
+    payeeName: String(row['收款公司名'] || ''),
+    invoiceNo: String(row['Invoice No.'] || ''),
+    remarks: String(row['備註'] || '-'),
+    recordStatus: 'confirmed',
+    sheetStatus: '已寫入',
+    imageStatus,
+    images: {
+      inboundMediaPath: imageLink,
+      compressedImagePath: '',
+      driveFileId: '',
+      driveLink: imageLink,
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function buildSummary(records) {
+  const totalAmount = records.reduce((s, r) => s + (Number(r.chequeAmount) || 0), 0);
+  const storeSet = new Set(records.map(r => r.storeCode));
+  return {
+    totalRecords: records.length,
+    totalAmount,
+    confirmedCount: records.length,
+    pendingCount: 0,
+    storeCount: storeSet.size,
+  };
+}
+
 async function loadDashboard(isManual = false) {
   try {
     if (isManual) refreshBtn.textContent = '更新中…';
-    const response = await fetch('./api/dashboard');
+    const url = `${APPS_SCRIPT_URL}?token=${encodeURIComponent(APPS_SCRIPT_TOKEN)}&action=getAll`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    dashboardData = await response.json();
+    const json = await response.json();
+    if (!json.ok) throw new Error(json.error || '讀取失敗');
 
-    renderStore(dashboardData.records, dashboardData.summary);
-    renderAdmin(dashboardData.records, dashboardData.summary);
-    renderAccounting(dashboardData.accountingRecords, dashboardData.summary);
+    const records = (json.records || []).map(sheetRowToRecord);
+    const summary = buildSummary(records);
+    dashboardData = { records, summary, accountingRecords: records };
+
+    renderStore(records, summary);
+    renderAdmin(records, summary);
+    renderAccounting(records, summary);
     attachRecordClicks();
   } catch (error) {
     console.error(error);
-    document.getElementById('storeMeta').textContent = '載入 ledger 失敗';
-    document.getElementById('adminMeta').textContent = '載入失敗';
+    document.getElementById('storeMeta').textContent = '載入失敗：' + error.message;
+    document.getElementById('adminMeta').textContent = '載入失敗：' + error.message;
   } finally {
     refreshBtn.textContent = '重新整理資料';
   }

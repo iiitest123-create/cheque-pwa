@@ -1,5 +1,5 @@
 const SHEET_NAME = 'Sheet1';
-const SECRET_TOKEN = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';
+const SECRET_TOKEN = 'wingwah-2026-cheque-bot-secret';
 
 const HEADERS = [
   '門市編號',
@@ -28,6 +28,24 @@ const REQUIRED_MAIN_FIELDS = [
   'invoiceNo',
   'recordKey'
 ];
+
+function doGet(e) {
+  try {
+    const token = e && e.parameter && e.parameter.token ? e.parameter.token : '';
+    if (token !== SECRET_TOKEN) {
+      return jsonOutput({ ok: false, error: 'Unauthorized' });
+    }
+    const action = e.parameter.action || 'getAll';
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) return jsonOutput({ ok: false, error: `Sheet not found: ${SHEET_NAME}` });
+    if (action === 'getAll') {
+      return getAllRecords(sheet);
+    }
+    return jsonOutput({ ok: false, error: `Unsupported GET action: ${action}` });
+  } catch (err) {
+    return jsonOutput({ ok: false, error: String(err) });
+  }
+}
 
 function doPost(e) {
   try {
@@ -59,6 +77,23 @@ function doPost(e) {
   } catch (err) {
     return jsonOutput({ ok: false, error: String(err) });
   }
+}
+
+function getAllRecords(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return jsonOutput({ ok: true, action: 'getAll', records: [], total: 0 });
+  }
+  const lastCol = HEADERS.length;
+  const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  const records = values.map(function(row) {
+    const obj = {};
+    HEADERS.forEach(function(h, i) { obj[h] = row[i] ?? ''; });
+    return obj;
+  }).filter(function(r) {
+    return String(r['記錄鍵值'] || '').trim() !== '';
+  });
+  return jsonOutput({ ok: true, action: 'getAll', records: records, total: records.length });
 }
 
 function appendMainRecord(sheet, data) {
