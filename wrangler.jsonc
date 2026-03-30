@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cheque-pwa",
+  "compatibility_date": "2025-09-27",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "cheque-pwa-template"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
