@@ -242,9 +242,7 @@ async function loadDashboard(isManual = false) {
 }
 
 // 拍照 + OCR 功能
-const cameraInput = document.getElementById('cameraInput');
-cameraInput?.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
+async function runOCR(file) {
   if (!file) return;
 
   // 顯示預覽圖片
@@ -292,8 +290,19 @@ cameraInput?.addEventListener('change', async (e) => {
     if (chequeNoInput && chequeNoMatch) chequeNoInput.value = chequeNoMatch[0];
 
   } catch (err) {
+    statusEl.style.display = 'block';
     statusText.textContent = '❌ OCR 失敗：' + err.message;
   }
+}
+
+// 監聽拍照同相簿兩個 input
+document.getElementById('cameraInput')?.addEventListener('change', (e) => {
+  runOCR(e.target.files[0]);
+  e.target.value = '';
+});
+document.getElementById('galleryInput')?.addEventListener('change', (e) => {
+  runOCR(e.target.files[0]);
+  e.target.value = '';
 });
 
 if ('serviceWorker' in navigator) {

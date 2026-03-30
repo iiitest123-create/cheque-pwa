@@ -56,11 +56,12 @@
               </div>
               <label class="full-width">
                 <span>上傳圖片</span>
-                <div class="upload-box" id="uploadBox" onclick="document.getElementById('cameraInput').click()">
-                  <div>📷 拍照 / 相簿</div>
-                  <small>點擊開啟相機或相簿</small>
+                <div class="upload-box" id="uploadBox" style="display:flex;gap:12px;justify-content:center">
+                  <button type="button" class="secondary-btn" onclick="document.getElementById('cameraInput').click()">📷 拍照</button>
+                  <button type="button" class="secondary-btn" onclick="document.getElementById('galleryInput').click()">🖼️ 相簿</button>
                 </div>
-                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" id="cameraInputCapture">
+                <input type="file" id="galleryInput" accept="image/*" style="display:none">
               </label>
               <div id="ocrImagePreview" style="display:none;margin-top:8px">
                 <img id="ocrCapturedImg" style="max-width:100%;border-radius:8px;border:1px solid #ddd">
