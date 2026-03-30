@@ -241,6 +241,61 @@ async function loadDashboard(isManual = false) {
   }
 }
 
+// 拍照 + OCR 功能
+const cameraInput = document.getElementById('cameraInput');
+cameraInput?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 顯示預覽圖片
+  const imgEl = document.getElementById('ocrCapturedImg');
+  const previewEl = document.getElementById('ocrImagePreview');
+  const statusEl = document.getElementById('ocrStatus');
+  const statusText = document.getElementById('ocrStatusText');
+  const resultEl = document.getElementById('ocrResult');
+  const resultText = document.getElementById('ocrResultText');
+
+  const objectUrl = URL.createObjectURL(file);
+  imgEl.src = objectUrl;
+  previewEl.style.display = 'block';
+  statusEl.style.display = 'block';
+  resultEl.style.display = 'none';
+  statusText.textContent = '⏳ 載入 OCR 引擎中…';
+
+  try {
+    const worker = await Tesseract.createWorker('chi_tra+eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          statusText.textContent = `🔍 識別中… ${Math.round(m.progress * 100)}%`;
+        }
+      }
+    });
+
+    const { data: { text } } = await worker.recognize(file);
+    await worker.terminate();
+
+    // 嘗試提取支票號碼同金額
+    const chequeNoMatch = text.match(/[0-9]{6,9}/);
+    const amountMatch = text.match(/[\$＄]?\s*([0-9,]+\.?[0-9]{0,2})/);
+
+    let extracted = text.trim();
+    let summary = '';
+    if (chequeNoMatch) summary += `支票號碼：${chequeNoMatch[0]}\n`;
+    if (amountMatch) summary += `金額：${amountMatch[1]}\n`;
+
+    statusEl.style.display = 'none';
+    resultEl.style.display = 'block';
+    resultText.textContent = summary || extracted.substring(0, 300);
+
+    // 自動填入支票號碼欄（如果有）
+    const chequeNoInput = document.querySelector('input[placeholder*="支票"], input[name*="cheque"]');
+    if (chequeNoInput && chequeNoMatch) chequeNoInput.value = chequeNoMatch[0];
+
+  } catch (err) {
+    statusText.textContent = '❌ OCR 失敗：' + err.message;
+  }
+});
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js').catch(() => {});

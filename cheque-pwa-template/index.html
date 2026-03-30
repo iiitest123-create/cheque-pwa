@@ -56,11 +56,22 @@
               </div>
               <label class="full-width">
                 <span>上傳圖片</span>
-                <div class="upload-box">
+                <div class="upload-box" id="uploadBox" onclick="document.getElementById('cameraInput').click()">
                   <div>📷 拍照 / 相簿</div>
-                  <small>之後會直接接返 OCR + ledger</small>
+                  <small>點擊開啟相機或相簿</small>
                 </div>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
               </label>
+              <div id="ocrImagePreview" style="display:none;margin-top:8px">
+                <img id="ocrCapturedImg" style="max-width:100%;border-radius:8px;border:1px solid #ddd">
+              </div>
+              <div id="ocrStatus" style="display:none;margin-top:8px;padding:8px;background:#f5f5f5;border-radius:6px;font-size:13px">
+                <span id="ocrStatusText">識別中…</span>
+              </div>
+              <div id="ocrResult" style="display:none;margin-top:8px;padding:10px;background:#fff8e1;border-radius:6px;border:1px solid #ffe082">
+                <div style="font-weight:bold;margin-bottom:6px">📋 OCR 識別結果</div>
+                <div id="ocrResultText" style="font-size:13px;white-space:pre-wrap"></div>
+              </div>
               <div class="button-row">
                 <button class="secondary-btn" data-demo="ocr">模擬 OCR 預覽</button>
                 <button class="primary-btn">提交（下一步接 backend）</button>
@@ -198,6 +209,7 @@
     </footer>
   </div>
 
+  <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
   <script src="./app.js"></script>
 </body>
 </html>
