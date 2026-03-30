@@ -1,0 +1,5 @@
+name = "cheque-pwa"
+compatibility_date = "2026-03-30"
+
+[assets]
+directory = "."
